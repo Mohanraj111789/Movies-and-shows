@@ -21,6 +21,11 @@ const Header = () => {
         <li><a href="#">Portfolio</a></li>
         <li><a href="#">Contact</a></li>
       </ul>
+        <div className="search-container">
+            <input type="text" placeholder="Search..." />
+            <button type="submit">🔍</button>
+        </div>
+      
     </header>
   );
 };
