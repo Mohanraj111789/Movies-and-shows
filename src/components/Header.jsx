@@ -23,7 +23,7 @@ const Header = () => {
       </ul>
         <div className="search-container">
             <input type="text" placeholder="Search..." />
-            <button type="submit">🔍</button>
+            <button type="submit">Search</button>
         </div>
       
     </header>

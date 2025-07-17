@@ -151,11 +151,11 @@
 }
 .search-container button {
   height: 40px;
-  width: 40px;
+  width: 80px;
   border: none;
   border-radius: 6px;
-  background-color: #ff6a00;
-  color: white;
+  background-color: #f90202;
+  color: rgb(255, 255, 255);
   cursor: pointer;
   font-size: 16px;
   font-family: 'Poppins', sans-serif;
