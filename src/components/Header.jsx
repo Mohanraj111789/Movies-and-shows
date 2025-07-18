@@ -8,7 +8,7 @@ const Header = () => {
 
   return (
     <header className="navbar">
-      <div className="logo">🌟 ColorNav</div>
+      <div className="logo">🎬 Movie Hunt</div>
 
       <div className="hamburger" onClick={toggleMenu}>
         &#9776;
@@ -16,10 +16,10 @@ const Header = () => {
 
       <ul className={`nav-links ${menuOpen ? "open" : ""}`}>
         <li><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Portfolio</a></li>
-        <li><a href="#">Contact</a></li>
+        <li><a href="#">Top Rated</a></li>
+        <li><a href="#">Popular</a></li>
+        <li><a href="#">Upcoming</a></li>
+        <li><a href="#">TV Shows</a></li>
       </ul>
         <div className="search-container">
             <input type="text" placeholder="Search..." />
