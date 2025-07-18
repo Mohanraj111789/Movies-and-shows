@@ -15,10 +15,10 @@ const Header = () => {
       </div>
 
       <ul className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Top Rated</a></li>
-        <li><a href="#">Popular</a></li>
-        <li><a href="#">Upcoming</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/movies/top">Top Rated</a></li>
+        <li><a href="/movies/popular">Popular</a></li>
+        <li><a href="/movies/upcoming">Upcoming</a></li>
         <li><a href="#">TV Shows</a></li>
       </ul>
         <div className="search-container">

@@ -1,0 +1,65 @@
+/* ========== Base Styles ========== */
+
+.movie-container {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  margin-top: 80px;
+  box-sizing: border-box;
+}
+
+.greeting-section {
+  background-color: #f0f8ff;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.greeting-text {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.welcome-text {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.gradient-button {
+  background: linear-gradient(135deg, #fb8f6e, #ff0000);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 1rem;
+}
+
+.gradient-button:hover {
+  background: linear-gradient(135deg, #5f76e8, #9b6bd1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.content-section {
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+  color: #1a1a1a;
+}
+
