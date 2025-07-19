@@ -1,0 +1,33 @@
+.footer-content{
+    background-color: #282c34;
+    color: rgb(241, 6, 6);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.9rem;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    transform: translateY(0);
+
+    background: linear-gradient(135deg, #0d75dd, #ff4b2b);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+.social-icons{
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    transition: transform 0.3s ease;
+    transform: translateY(0);
+}
+    &:hover {
+        background: linear-gradient(135deg, #ff4b2b, #0d75dd);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .btn:hover {
+        background: linear-gradient(135deg, #ff4b2b, #0d75dd);
+        transform: scale(1.05);
+    }
