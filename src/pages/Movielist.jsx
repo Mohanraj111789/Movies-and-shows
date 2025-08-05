@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import "../styles/Movielist.css";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
-import useFetch from "../hooks/useFetch"; // Make sure this import exists
+import GenreFilter from "../components/GenreFilter";
+import useMoviesWithGenres from "../hooks/useMoviesWithGenres";
 
 const Movielist = ({ title, apiPath }) => {
-  const { data: movies, loading, error } = useFetch(apiPath); // Removed curly braces from apiPath
+  const [selectedGenre, setSelectedGenre] = useState(null);
+  const { data: movies, loading, error, genres } = useMoviesWithGenres(apiPath, "", selectedGenre);
 
   const [userName, setUserName] = useState(localStorage.getItem("userName") || "Guest");
   const [greeting, setGreeting] = useState("");
@@ -27,8 +29,23 @@ const Movielist = ({ title, apiPath }) => {
     }
   }, [title]);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return (
+    <div className="loading-container">
+      <div className="loading-spinner">Loading movies...</div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="error-container">
+      <div className="error-message">Error: {error}</div>
+      <button 
+        className="retry-button"
+        onClick={() => window.location.reload()}
+      >
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <main>
@@ -53,6 +70,14 @@ const Movielist = ({ title, apiPath }) => {
             </button>
           </div>
         )}
+
+        {/* Genre Filter Section */}
+        <GenreFilter
+          genres={genres || []}
+          selectedGenre={selectedGenre}
+          onGenreSelect={setSelectedGenre}
+          loading={loading}
+        />
 
         <div className="card-grid">
           {movies && movies.map((movie) => (

@@ -14,10 +14,27 @@
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
   margin: 0;
-  z-index: 9999;
+  width: 100%;
+  z-index: 1000;
   background-color: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
+}
+
+/* Main content wrapper */
+main {
+  margin-top: 80px; /* Same as navbar height */
+  min-height: calc(100vh - 80px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Body reset */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 /* Add this to create space below navbar */
@@ -100,8 +117,8 @@ body {
   }
 
   .nav-links {
-    position: absolute;
-    top: 70px;
+    position: fixed;
+    top: 80px;
     left: 0;
     right: 0;
     background: linear-gradient(to bottom right, #6a11cb, #2575fc);
@@ -183,8 +200,8 @@ body {
 
 @media (max-width: 768px) {
   .search-container {
-    position: absolute;
-    top: 70px;
+    position: fixed;
+    top: 80px;
     left: 0;
     width: 100%;
     padding: 10px;

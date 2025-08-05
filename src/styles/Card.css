@@ -123,3 +123,32 @@
     -webkit-line-clamp: 1; /* Number of lines to show */
     -webkit-box-orient: vertical;
 }
+
+/* Genre styles */
+.movie-genres {
+  margin: 0.5rem 0;
+}
+
+.genre-label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.genre-tag {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+}

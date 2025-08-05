@@ -59,7 +59,7 @@ const MovieDetails = ({ title }) => {
             <p>{movie.overview}</p>
             <div className="movie-meta">
               <p><strong>Release Date:</strong> {movie.release_date || 'N/A'}</p>
-              <p><strong>Rating:</strong> {movie.vote_average ? `${movie.vote_average}/10` : 'N/A'}</p>
+              <p><strong>Rating:</strong> {movie.vote_average ? `${movie.vote_average.toFixed(2)}/10` : 'N/A'}</p>
               <p><strong>Runtime:</strong> {formatRuntime(movie.runtime)}</p>
               <p><strong>Genres:</strong> {movie.genres?.length ? movie.genres.map(genre => genre.name).join(", ") : 'N/A'}</p>
               <a
