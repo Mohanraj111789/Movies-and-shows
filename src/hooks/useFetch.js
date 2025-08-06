@@ -13,8 +13,8 @@ const useFetch = (apiPath, query = "") => {
       try {
         setLoading(true);
         const url = query
-          ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1`
-          : `${BASE_URL}/${apiPath}?api_key=${API_KEY}&language=en-US&page=1`;
+          ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&language=en-US&page=1&append_to_response=genres`
+          : `${BASE_URL}/${apiPath}?api_key=${API_KEY}&language=en-US&page=1&append_to_response=genres`;
 
         const response = await fetch(url);
         if (!response.ok) {

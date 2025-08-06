@@ -1,8 +1,11 @@
 import React from "react";
+import useGenres from "../hooks/useGenres";
 import "../styles/Card.css";
 
 const Card = ({ movie }) => {
   const posterUrl = `https://image.tmdb.org/t/p/original${movie.poster_path}`;
+  const { getGenreNames } = useGenres();
+  const genreNames = getGenreNames(movie.genre_ids);
 
   return (
     <div className="card" title={movie.title}>
@@ -12,17 +15,14 @@ const Card = ({ movie }) => {
         <h3 className="text-overflow1">{movie.title}</h3>
         <p>Release Date: {movie.release_date}</p>
         
-        {movie.genre_ids && movie.genre_ids.length > 0 && movie.genres && (
-          <div className="movie-genres">
-            <span className="genre-label">Genres:</span>
-            <div className="genre-tags">
-              {movie.genre_ids.slice(0, 2).map((genreId) => {
-                const genre = movie.genres.find(g => g.id === genreId);
-                return genre ? (
-                  <span key={genreId} className="genre-tag">{genre.name}</span>
-                ) : null;
-              })}
-            </div>
+        {/* Genres */}
+        {genreNames.length > 0 && (
+          <div className="genres-container">
+            {genreNames.map((genre, index) => (
+              <span key={index} className="genre-tag">
+                {genre}
+              </span>
+            ))}
           </div>
         )}
     
