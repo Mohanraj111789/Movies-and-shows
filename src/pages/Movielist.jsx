@@ -11,6 +11,7 @@ const Movielist = ({ title, apiPath }) => {
 
   const [userName, setUserName] = useState(localStorage.getItem("userName") || "Guest");
   const [greeting, setGreeting] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigator = useNavigate();
 
@@ -27,7 +28,16 @@ const Movielist = ({ title, apiPath }) => {
     } else {
       setGreeting("Good Night");
     }
+
+    // Check login status
+    const loginStatus = localStorage.getItem("isLoggedIn");
+    setIsLoggedIn(loginStatus === "true");
   }, [title]);
+
+  const handleLogin = () => {
+    // Navigate to login page
+    navigator('/login');
+  };
 
   if (loading) return (
     <div className="loading-container">
@@ -56,18 +66,28 @@ const Movielist = ({ title, apiPath }) => {
               {greeting}, {userName}! 👋
             </h1>
             <p className="welcome-text">
-              {userName === "Guest"
-                ? "Sign in to personalize your movie experience"
-                : "Welcome back to your movie journey"}
+              {isLoggedIn
+                ? "Welcome back to your movie journey"
+                : "Sign in to personalize your movie experience"}
             </p>
-            <button
-              className="gradient-button"
-              onClick={() => {
-                navigator("/movies/upcoming");
-              }}
-            >
-              Explore now
-            </button>
+            <div className="button-group">
+              <button
+                className="gradient-button"
+                onClick={() => {
+                  navigator("/movies/upcoming");
+                }}
+              >
+                Explore now
+              </button>
+              {!isLoggedIn && (
+                <button
+                  className="login-button"
+                  onClick={handleLogin}
+                >
+                  Login
+                </button>
+              )}
+            </div>
           </div>
         )}
 

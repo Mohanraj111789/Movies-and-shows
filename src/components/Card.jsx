@@ -27,8 +27,8 @@ const Card = ({ movie }) => {
         )}
     
         <p className="text-overflow">{movie.overview}</p>
-        <p>Rating: {movie.vote_average}</p>
-        <p>Popularity: {movie.popularity}</p>
+        <p>Rating: {movie.vote_average.toFixed(1)}</p>
+        <p>Popularity: {Math.round(movie.popularity)}</p>
 
         {/* Styled <a> as a button */}
         <a

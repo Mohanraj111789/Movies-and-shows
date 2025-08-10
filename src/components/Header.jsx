@@ -1,14 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import VoiceSearch from "./VoiceSearch";
 import VoiceIndicator from "./VoiceIndicator";
 import "../styles/Header.css";
 import "../index.css";
+
 const Header = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    // Check login status from localStorage
+    const loginStatus = localStorage.getItem("isLoggedIn");
+    const user = localStorage.getItem("userName");
+    
+    setIsLoggedIn(loginStatus === "true");
+    setUserName(user || "Guest");
+
+    // Listen for storage changes (when login/logout happens in other components)
+    const handleStorageChange = () => {
+      const newLoginStatus = localStorage.getItem("isLoggedIn");
+      const newUser = localStorage.getItem("userName");
+      
+      setIsLoggedIn(newLoginStatus === "true");
+      setUserName(newUser || "Guest");
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events
+    window.addEventListener('loginStatusChanged', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('loginStatusChanged', handleStorageChange);
+    };
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -29,9 +60,40 @@ const Header = () => {
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
+  const handleLogin = () => {
+    // Navigate to login page
+    navigate('/login');
+  };
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("userName");
+    localStorage.removeItem("isLoggedIn");
+    
+    // Update state
+    setIsLoggedIn(false);
+    setUserName("Guest");
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('loginStatusChanged'));
+    
+    // Redirect to home page
+    navigate("/");
+  };
+
   return (
     <>
       <header className="navbar">
+        {isLoggedIn ? (
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <button className="login-btn" onClick={handleLogin}>
+            Login
+          </button>
+        )}
+        
         <Link to="/" className="logo">
           🎬 Movie Hunt
         </Link>
@@ -50,23 +112,23 @@ const Header = () => {
         </nav>
 
         <div className="search-container">
-                  <form onSubmit={handleSubmit}>
-          <input
-            type="search"
-            placeholder="Search movies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <button type="submit" className="search-button">
-            Search
-          </button>
-          <VoiceSearch 
-            onVoiceInput={handleVoiceInput}
-            isListening={isListening}
-            setIsListening={setIsListening}
-          />
-        </form>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="search"
+              placeholder="Search movies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-button">
+              Search
+            </button>
+            <VoiceSearch 
+              onVoiceInput={handleVoiceInput}
+              isListening={isListening}
+              setIsListening={setIsListening}
+            />
+          </form>
         </div>
       </header>
       <VoiceIndicator isListening={isListening} />
