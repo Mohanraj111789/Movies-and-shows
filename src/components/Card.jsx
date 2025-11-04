@@ -6,7 +6,6 @@ const Card = ({ movie }) => {
   const posterUrl = `https://image.tmdb.org/t/p/original${movie.poster_path}`;
   const { getGenreNames } = useGenres();
   const genreNames = getGenreNames(movie.genre_ids);
-  console.log(genreNames);
 
   return (
     <div className="card" title={movie.title}>
