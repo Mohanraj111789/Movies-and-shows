@@ -1,0 +1,72 @@
+.user-recommendations-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.user-recommendations-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.user-recommendations-header h1 {
+  font-size: 2.5rem;
+  margin: 1rem 0;
+  color: #e50914;
+}
+
+.user-recommendations-header p {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 1.5rem;
+}
+
+.back-button {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.back-button:hover {
+  color: #e50914;
+}
+
+.user-recommendations-content {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  font-size: 1.2rem;
+}
+
+.loading-container {
+  color: #ccc;
+}
+
+.error-container {
+  color: #e50914;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-recommendations-header h1 {
+    font-size: 2rem;
+  }
+  
+  .user-recommendations-header p {
+    font-size: 1rem;
+  }
+}

@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { Movielist, MovieDetails, Search, PageNotFound } from "../pages";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
+import UserRecommendations from "../pages/UserRecommendations";
 
 const AllRoutes = () => {
     return <>
@@ -14,6 +15,7 @@ const AllRoutes = () => {
         <Route path="/movies/top" element={<Movielist title="Top Rated" apiPath="movie/top_rated"/>} />
         <Route path="/movies/upcoming" element={<Movielist title="Upcoming" apiPath="movie/upcoming"/>} />
         <Route path="/search" element={<Search apiPath="search/movie"/>} />
+        <Route path="/recommendations/:userName" element={<UserRecommendations />} />
         <Route path="*" element={<PageNotFound title="Page Not Found"/>} />
     </Routes>
     </>

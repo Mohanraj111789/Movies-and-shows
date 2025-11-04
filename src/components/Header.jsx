@@ -17,17 +17,19 @@ const Header = () => {
     // Check login status from localStorage
     const loginStatus = localStorage.getItem("isLoggedIn");
     const user = localStorage.getItem("userName");
+    const userData = localStorage.getItem("userData");
     
     setIsLoggedIn(loginStatus === "true");
-    setUserName(user || "Guest");
+    setUserName(userData ? JSON.parse(userData).userName : (user || "Guest"));
 
     // Listen for storage changes (when login/logout happens in other components)
     const handleStorageChange = () => {
       const newLoginStatus = localStorage.getItem("isLoggedIn");
       const newUser = localStorage.getItem("userName");
+      const userData = localStorage.getItem("userData");
       
       setIsLoggedIn(newLoginStatus === "true");
-      setUserName(newUser || "Guest");
+      setUserName(userData ? JSON.parse(userData).userName : (newUser || "Guest"));
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -108,6 +110,9 @@ const Header = () => {
             <li><Link to="/movies/top">Top Rated</Link></li>
             <li><Link to="/movies/popular">Popular</Link></li>
             <li><Link to="/movies/upcoming">Upcoming</Link></li>
+            {isLoggedIn && (
+              <li><Link to={`/recommendations/${userName}`}>My Recommendations</Link></li>
+            )}
           </ul>
         </nav>
 

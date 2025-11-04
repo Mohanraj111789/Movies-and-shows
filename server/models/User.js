@@ -9,6 +9,14 @@ const userSchema = new mongoose.Schema({
     minlength: [2, 'Full name must be at least 2 characters long'],
     maxlength: [50, 'Full name cannot exceed 50 characters']
   },
+  userName: {
+    type: String,
+    required: [true, 'Username is required'],
+    trim: true,
+    unique: true,
+    minlength: [2, 'Username must be at least 2 characters long'],
+    maxlength: [30, 'Username cannot exceed 30 characters']
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -97,4 +105,4 @@ userSchema.set('toJSON', {
 
 const User = mongoose.model('User', userSchema);
 
-export default User; 
+export default User;

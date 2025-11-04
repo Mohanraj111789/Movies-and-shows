@@ -6,6 +6,7 @@ import "../styles/Signup.css";
 const Signup = () => {
   const [formData, setFormData] = useState({
     fullName: "",
+    userName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -50,6 +51,7 @@ const Signup = () => {
       // Call the signup API
       const response = await authAPI.signup({
         fullName: formData.fullName,
+        userName: formData.userName,
         email: formData.email,
         password: formData.password
       });
@@ -122,6 +124,22 @@ const Signup = () => {
               placeholder="Enter your full name"
               required
               className="form-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="userName">Username</label>
+            <input
+              type="text"
+              id="userName"
+              name="userName"
+              value={formData.userName}
+              onChange={handleInputChange}
+              placeholder="Choose a unique username"
+              required
+              className="form-input"
+              pattern="^[a-zA-Z0-9_]+$"
+              title="Username can only contain letters, numbers, and underscores"
             />
           </div>
 
@@ -226,4 +244,4 @@ const Signup = () => {
   );
 };
 
-export default Signup; 
+export default Signup;

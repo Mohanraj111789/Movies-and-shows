@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
+import requireDbConnection from '../middleware/requireDbConnection.js';
 
 const router = express.Router();
 
@@ -18,6 +19,12 @@ const validateSignup = [
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('Full name must be between 2 and 50 characters'),
+  body('userName')
+    .trim()
+    .isLength({ min: 2, max: 30 })
+    .withMessage('Username must be between 2 and 30 characters')
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage('Username can only contain letters, numbers, and underscores'),
   body('email')
     .isEmail()
     .normalizeEmail()
@@ -40,7 +47,7 @@ const validateLogin = [
 // @route   POST /api/users/signup
 // @desc    Register a new user
 // @access  Public
-router.post('/signup', validateSignup, async (req, res) => {
+router.post('/signup', validateSignup, requireDbConnection(), async (req, res) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
@@ -51,20 +58,30 @@ router.post('/signup', validateSignup, async (req, res) => {
       });
     }
 
-    const { fullName, email, password } = req.body;
+    const { fullName, userName, email, password } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findByEmail(email);
-    if (existingUser) {
+    // Check if user already exists with email
+    const existingUserEmail = await User.findByEmail(email);
+    if (existingUserEmail) {
       return res.status(400).json({
         success: false,
         message: 'User with this email already exists'
+      });
+    }
+    
+    // Check if username is already taken
+    const existingUserName = await User.findOne({ userName });
+    if (existingUserName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username is already taken'
       });
     }
 
     // Create new user
     const user = new User({
       fullName,
+      userName,
       email,
       password,
       isGuest: false
@@ -333,4 +350,4 @@ router.put('/profile', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

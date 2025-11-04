@@ -123,3 +123,18 @@
     -webkit-line-clamp: 1; /* Number of lines to show */
     -webkit-box-orient: vertical;
 }
+.genre {
+  font-size: 16px;
+  color: #f5f5f5;
+  background-color: #ceb6b6;
+  padding: 8px 12px;
+  border-radius: 8px;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+.genre span {
+  font-weight: 600;
+  color: #f04646; /* highlight label */
+  margin-right: 6px;
+}

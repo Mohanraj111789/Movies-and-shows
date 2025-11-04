@@ -5,6 +5,39 @@ const getAuthToken = () => {
   return localStorage.getItem('authToken');
 };
 
+// Recommendation API calls
+export const recommendationAPI = {
+  // Get all recommendations
+  getRecommendations: async () => {
+    return await apiRequest('/recommendations');
+  },
+
+  // Get recommendations by username
+  getUserRecommendations: async (userName) => {
+    return await apiRequest(`/recommendations/user/${userName}`);
+  },
+
+  // Get recommendation by ID
+  getRecommendationById: async (id) => {
+    return await apiRequest(`/recommendations/${id}`);
+  },
+
+  // Create a new recommendation
+  createRecommendation: async (recommendationData) => {
+    return await apiRequest('/recommendations', {
+      method: 'POST',
+      body: JSON.stringify(recommendationData)
+    });
+  },
+
+  // Delete a recommendation
+  deleteRecommendation: async (id) => {
+    return await apiRequest(`/recommendations/${id}`, {
+      method: 'DELETE'
+    });
+  }
+};
+
 // Helper function to set auth token in localStorage
 const setAuthToken = (token) => {
   localStorage.setItem('authToken', token);
@@ -161,4 +194,4 @@ export default {
   getUserData,
   setUserData,
   removeUserData
-}; 
+};
