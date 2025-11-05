@@ -31,7 +31,7 @@ const Signup = () => {
     try {
       const res = await axios.post("http://localhost:5000/api/auth/register", formData);
       alert(res.data.message || "Account created successfully!");
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       console.error(error);
       setError(error.response?.data?.message || "Something went wrong. Try again!");
@@ -72,22 +72,6 @@ const Signup = () => {
               className="form-input"
             />
           </div>
-{/* 
-          <div className="form-group">
-            <label htmlFor="userName">Username</label>
-            <input
-              type="text"
-              id="userName"
-              name="userName"
-              value={formData.userName}
-              onChange={handleInputChange}
-              placeholder="Choose a unique username"
-              required
-              className="form-input"
-              pattern="^[a-zA-Z0-9_]+$"
-              title="Username can only contain letters, numbers, and underscores"
-            />
-          </div> */}
 
           <div className="form-group">
             <label htmlFor="email">Email</label>

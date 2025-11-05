@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { authAPI } from "../utils/api";
+import axios from "axios";
 import "../styles/Login.css";
 
 const Login = () => {
@@ -11,62 +11,72 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   const navigate = useNavigate();
 
+  // ✅ Handle form inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    // Clear error when user starts typing
+
     if (error) setError("");
   };
 
+  // ✅ Login user
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      // Call the login API
-      const response = await authAPI.login(formData);
-      
-      if (response.success) {
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new Event('loginStatusChanged'));
-        
-        // Redirect to home page
+      const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+
+      // Example expected response:
+      // { success: true, user: {...}, token: "..." }
+
+      if (response.data.success) {
+        const { user, token } = response.data;
+
+        // ✅ Store user info in localStorage
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userData", JSON.stringify(user));
+        localStorage.setItem("authToken", token);
+
+        // Notify Header and other components
+        window.dispatchEvent(new Event("loginStatusChanged"));
+
         navigate("/");
       } else {
-        setError(response.message || "Login failed");
+        setError(response.data.message || "Invalid credentials");
       }
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      console.error(err);
+      setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  //✅ Guest Login handler
   const handleGuestLogin = async () => {
     try {
       setIsLoading(true);
-      
-      // Call the guest login API
-      const response = await authAPI.guestLogin();
-      
-      if (response.success) {
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new Event('loginStatusChanged'));
-        
-        // Redirect to home page
+      const response = await axios.post("http://localhost:5000/api/auth/guest");
+
+      if (response.data.success) {
+        const { user, token } = response.data;
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userData", JSON.stringify(user));
+        localStorage.setItem("authToken", token);
+        window.dispatchEvent(new Event("loginStatusChanged"));
         navigate("/");
       } else {
-        setError(response.message || "Guest login failed");
+        setError(response.data.message || "Guest login failed");
       }
     } catch (err) {
-      setError(err.message || "Guest login failed. Please try again.");
+      setError(err.response?.data?.message || "Guest login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -84,11 +94,7 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -171,4 +177,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;
