@@ -2,8 +2,10 @@
 
 import time
 import random
+import re
 import requests
 import pandas as pd
+import numpy as np
 from flask import Flask, request, jsonify
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -15,6 +17,21 @@ app = Flask(__name__)
 # ----------------------------
 API_KEY = "61db8a0327aff8a8e4b9fe5b53623000"
 BASE_URL = "https://api.themoviedb.org/3"
+
+# ----------------------------
+# 🔹 Text Preprocessing
+# ----------------------------
+def preprocess_text(text):
+    """Clean and normalize text for better similarity matching"""
+    if not text or not isinstance(text, str):
+        return ""
+    # Convert to lowercase
+    text = text.lower()
+    # Remove special characters but keep spaces
+    text = re.sub(r'[^a-z0-9\s]', ' ', text)
+    # Remove extra whitespace
+    text = ' '.join(text.split())
+    return text
 
 # ----------------------------
 # 🔹 Fetch Genre List (Safe)
@@ -37,22 +54,18 @@ def get_genre_dict():
 GENRE_MAP = get_genre_dict()
 
 # ----------------------------
-# 🔹 Fetch Movie Keywords (Safe with Retry)
+# 🔹 Fetch Movie Keywords (Fast)
 # ----------------------------
-def get_movie_keywords(movie_id, retries=3):
-    """Fetch keywords for a movie with retry logic"""
-    for attempt in range(retries):
-        try:
-            url = f"{BASE_URL}/movie/{movie_id}/keywords?api_key={API_KEY}"
-            res = requests.get(url, timeout=10)
-            if res.status_code == 200:
-                data = res.json()
-                return [kw["name"] for kw in data.get("keywords", [])]
-            else:
-                print(f"⚠️ Failed to fetch keywords for {movie_id}: {res.status_code}")
-        except Exception as e:
-            print(f"⚠️ Error fetching keywords for {movie_id}, retry {attempt+1}/{retries}: {e}")
-            time.sleep(random.uniform(1.0, 2.0))  # wait before retry
+def get_movie_keywords(movie_id):
+    """Fetch keywords for a movie (single attempt for speed)"""
+    try:
+        url = f"{BASE_URL}/movie/{movie_id}/keywords?api_key={API_KEY}"
+        res = requests.get(url, timeout=5)
+        if res.status_code == 200:
+            data = res.json()
+            return [kw["name"] for kw in data.get("keywords", [])]
+    except Exception as e:
+        pass  # Silently skip failed requests for speed
     return []
 
 # ----------------------------
@@ -98,13 +111,20 @@ def prepare_dataset():
     )
     df["keywords"] = df["id"].apply(lambda mid: " ".join(get_movie_keywords(mid)))
 
-    # Combine everything into one text field
+    # Preprocess and combine text fields with higher weighting for better matching
+    # Title gets repeated 5x for higher importance in similarity
     df["combined"] = (
-        df["title"].fillna("") + " " +
+        (df["title"].fillna("") + " ") * 5 +  # Title weight: 5x (increased)
         df["overview"].fillna("") + " " +
-        df["genres"].fillna("") + " " +
-        df["keywords"].fillna("")
+        (df["genres"].fillna("") + " ") * 4 +  # Genre weight: 4x (increased)
+        (df["keywords"].fillna("") + " ") * 2  # Keyword weight: 2x
     )
+    
+    # Apply preprocessing to combined text
+    df["combined"] = df["combined"].apply(preprocess_text)
+    
+    # Store original title for fuzzy matching
+    df["title_processed"] = df["title"].apply(preprocess_text)
 
     print("✅ Dataset prepared for training.")
     return df
@@ -113,11 +133,23 @@ def prepare_dataset():
 # 🔹 Build TF-IDF Model
 # ----------------------------
 def build_model():
-    """Build TF-IDF model for similarity"""
+    """Build TF-IDF model for similarity with optimized parameters"""
     df = prepare_dataset()
-    vectorizer = TfidfVectorizer(stop_words="english")
+    
+    # Enhanced TF-IDF configuration with character n-grams for better name matching
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        max_features=5000,  # Limit features to most important terms
+        ngram_range=(1, 3),  # Use unigrams, bigrams, and trigrams
+        analyzer='word',  # Word-level analysis
+        min_df=1,  # Minimum document frequency
+        max_df=0.85,  # Maximum document frequency (ignore too common terms)
+        sublinear_tf=True,  # Use sublinear term frequency scaling
+        token_pattern=r'\b\w+\b'  # Better tokenization
+    )
+    
     tfidf_matrix = vectorizer.fit_transform(df["combined"])
-    print("🤖 TF-IDF model built successfully.")
+    print(f"🤖 TF-IDF model built successfully with {tfidf_matrix.shape[1]} features.")
     return df, vectorizer, tfidf_matrix
 
 # ----------------------------
@@ -128,23 +160,80 @@ movies_df, vectorizer, tfidf_matrix = build_model()
 print("✅ Model ready for recommendations!\n")
 
 # ----------------------------
-# 🔹 Recommendation Logic
+# 🔹 Recommendation Logic with Enhanced Similarity
 # ----------------------------
 def get_recommendations(query, top_n=5):
-    """Return top N movie recommendations for a query"""
-    query_vector = vectorizer.transform([query])
-    similarity_scores = cosine_similarity(query_vector, tfidf_matrix).flatten()
-    top_indices = similarity_scores.argsort()[-top_n:][::-1]
-
+    """Return top N movie recommendations with hybrid similarity scoring"""
+    # Preprocess the query for consistent matching
+    processed_query = preprocess_text(query)
+    query_words = set(processed_query.split())
+    
+    # Transform query to TF-IDF vector
+    query_vector = vectorizer.transform([processed_query])
+    
+    # Calculate base cosine similarity
+    base_similarity = cosine_similarity(query_vector, tfidf_matrix).flatten()
+    
+    # Hybrid scoring: Boost scores based on multiple factors
+    hybrid_scores = base_similarity.copy()
+    
+    for i in range(len(movies_df)):
+        movie = movies_df.iloc[i]
+        boost = 0.0
+        
+        # 1. Title exact/partial match boost
+        title_processed = movie["title_processed"]
+        title_words = set(title_processed.split())
+        
+        # Exact title match
+        if processed_query == title_processed:
+            boost += 0.5
+        # Partial title match (any word overlap)
+        elif query_words & title_words:
+            overlap_ratio = len(query_words & title_words) / max(len(query_words), 1)
+            boost += 0.3 * overlap_ratio
+        # Substring match
+        elif processed_query in title_processed or title_processed in processed_query:
+            boost += 0.2
+        
+        # 2. Genre match boost
+        movie_genres = set(movie["genres"].lower().split()) if movie["genres"] else set()
+        if movie_genres & query_words:
+            # Direct genre match in query
+            genre_overlap = len(movie_genres & query_words)
+            boost += 0.25 * genre_overlap
+        
+        # 3. Keyword match boost
+        movie_keywords = set(movie["keywords"].lower().split()) if movie["keywords"] else set()
+        if movie_keywords & query_words:
+            keyword_overlap = len(movie_keywords & query_words)
+            boost += 0.15 * min(keyword_overlap, 2)  # Cap at 2 keywords
+        
+        # Apply boost to hybrid score
+        hybrid_scores[i] = min(base_similarity[i] + boost, 1.0)
+    
+    # Get top N indices based on hybrid scores
+    top_indices = hybrid_scores.argsort()[-top_n:][::-1]
+    
     results = []
     for i in top_indices:
         movie = movies_df.iloc[i]
-        results.append({
-            "title": movie["title"],
-            "genres": movie["genres"].split(),
-            "keywords": movie["keywords"].split(),
-            "score": round(float(similarity_scores[i]), 3)
-        })
+        score = float(hybrid_scores[i])
+        
+        # Include results with any positive score
+        if score > 0.0:
+            results.append({
+                "title": movie["title"],
+                "overview": movie["overview"],
+                "genres": movie["genres"].split() if movie["genres"] else [],
+                "keywords": movie["keywords"].split() if movie["keywords"] else [],
+                "similarity_score": round(score, 4),
+                "base_score": round(float(base_similarity[i]), 4)
+            })
+    
+    if not results:
+        print(f"⚠️ No matches found for query: '{query}'")
+    
     return results
 
 # ----------------------------
@@ -155,13 +244,25 @@ def recommend():
     """Flask API endpoint to get movie recommendations"""
     data = request.get_json()
     query = data.get("query", "").strip()
+    top_n = data.get("top_n", 5)
 
     if not query:
         return jsonify({"error": "No query provided"}), 400
+    
+    # Validate top_n parameter
+    try:
+        top_n = int(top_n)
+        if top_n < 1 or top_n > 20:
+            top_n = 5
+    except (ValueError, TypeError):
+        top_n = 5
 
-    recommendations = get_recommendations(query)
+    recommendations = get_recommendations(query, top_n=top_n)
+    
     return jsonify({
         "query": query,
+        "processed_query": preprocess_text(query),
+        "total_results": len(recommendations),
         "recommendations": recommendations
     })
 
