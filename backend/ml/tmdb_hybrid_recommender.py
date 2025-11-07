@@ -33,6 +33,31 @@ def preprocess_text(text):
     text = ' '.join(text.split())
     return text
 
+def calculate_string_similarity(str1, str2):
+    """Calculate character-level similarity between two strings"""
+    if not str1 or not str2:
+        return 0.0
+    
+    # Exact match
+    if str1 == str2:
+        return 1.0
+    
+    # Calculate Jaccard similarity on character trigrams
+    def get_char_ngrams(s, n=3):
+        s = ' ' + s + ' '  # Add padding
+        return set(s[i:i+n] for i in range(len(s) - n + 1))
+    
+    ngrams1 = get_char_ngrams(str1)
+    ngrams2 = get_char_ngrams(str2)
+    
+    if not ngrams1 or not ngrams2:
+        return 0.0
+    
+    intersection = len(ngrams1 & ngrams2)
+    union = len(ngrams1 | ngrams2)
+    
+    return intersection / union if union > 0 else 0.0
+
 # ----------------------------
 # 🔹 Fetch Genre List (Safe)
 # ----------------------------
@@ -181,20 +206,37 @@ def get_recommendations(query, top_n=5):
         movie = movies_df.iloc[i]
         boost = 0.0
         
-        # 1. Title exact/partial match boost
+        # 1. Enhanced Title matching with multiple strategies
         title_processed = movie["title_processed"]
         title_words = set(title_processed.split())
         
-        # Exact title match
+        # Strategy A: Exact title match
         if processed_query == title_processed:
-            boost += 0.5
-        # Partial title match (any word overlap)
-        elif query_words & title_words:
+            boost += 0.7  # Increased from 0.5
+        
+        # Strategy B: Character-level similarity (handles typos, partial names)
+        char_similarity = calculate_string_similarity(processed_query, title_processed)
+        if char_similarity > 0.5:
+            boost += 0.5 * char_similarity  # Up to 0.5 boost
+        
+        # Strategy C: Word overlap in title
+        if query_words & title_words:
             overlap_ratio = len(query_words & title_words) / max(len(query_words), 1)
-            boost += 0.3 * overlap_ratio
-        # Substring match
-        elif processed_query in title_processed or title_processed in processed_query:
-            boost += 0.2
+            boost += 0.4 * overlap_ratio  # Increased from 0.3
+        
+        # Strategy D: Substring match (one contains the other)
+        if processed_query in title_processed:
+            # Query is substring of title
+            boost += 0.35
+        elif title_processed in processed_query:
+            # Title is substring of query
+            boost += 0.3
+        
+        # Strategy E: First word match (important for movie names)
+        query_first_word = processed_query.split()[0] if processed_query.split() else ""
+        title_first_word = title_processed.split()[0] if title_processed.split() else ""
+        if query_first_word and query_first_word == title_first_word and len(query_first_word) > 2:
+            boost += 0.25
         
         # 2. Genre match boost
         movie_genres = set(movie["genres"].lower().split()) if movie["genres"] else set()
@@ -209,8 +251,8 @@ def get_recommendations(query, top_n=5):
             keyword_overlap = len(movie_keywords & query_words)
             boost += 0.15 * min(keyword_overlap, 2)  # Cap at 2 keywords
         
-        # Apply boost to hybrid score
-        hybrid_scores[i] = min(base_similarity[i] + boost, 1.0)
+        # Apply boost to hybrid score (allow scores > 1.0 for very strong matches)
+        hybrid_scores[i] = base_similarity[i] + boost
     
     # Get top N indices based on hybrid scores
     top_indices = hybrid_scores.argsort()[-top_n:][::-1]
