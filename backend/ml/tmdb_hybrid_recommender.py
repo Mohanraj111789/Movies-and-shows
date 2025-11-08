@@ -153,10 +153,6 @@ def prepare_dataset():
 
     print("✅ Dataset prepared for training.")
     return df
-
-# ----------------------------
-# 🔹 Build TF-IDF Model
-# ----------------------------
 def build_model():
     """Build TF-IDF model for similarity with optimized parameters"""
     df = prepare_dataset()
